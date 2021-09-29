@@ -19,4 +19,11 @@ abstract class RelationFilter extends Filter
 
         $this->applyRequest();
     }
+
+    public function tap(Relation $relation): Relation
+    {
+        $this->apply($relation);
+
+        return $relation;
+    }
 }
