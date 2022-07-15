@@ -1,6 +1,6 @@
 {
     "name": "tekook/filterable",
-    "version": "1.0.0-beta1",
+    "version": "1.0.0-beta2",
     "description": "Laravel Filter Extensions for controllers",
     "license": "MIT",
     "autoload": {
