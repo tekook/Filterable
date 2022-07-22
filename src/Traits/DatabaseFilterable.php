@@ -63,10 +63,18 @@ trait DatabaseFilterable
             if ($options->applies($this->dateAttributes ?? [])) {
                 $this->dateFilter($value, $options);
             } else {
-                if ($options->greater || $options->less) {
-                    $this->builder->where($options->name, $options->operator(), (int)$value);
+                if (is_array($value)) {
+                    if ($options->not) {
+                        $this->builder->whereNotIn($options->name, $value);
+                    } else {
+                        $this->builder->whereIn($options->name, $value);
+                    }
                 } else {
-                    $this->builder->where($options->name, $options->operator(), '%' . $value . '%');
+                    if ($options->greater || $options->less) {
+                        $this->builder->where($options->name, $options->operator(), (int)$value);
+                    } else {
+                        $this->builder->where($options->name, $options->operator(), '%' . $value . '%');
+                    }
                 }
             }
         } else {
