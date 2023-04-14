@@ -16,6 +16,7 @@ use Tekook\Filterable\AttributeOptions;
  * @property bool $allowSearch
  * @property array $nullableAttributes
  * @property array $dateAttributes
+ * @property array $exactAttributes
  * @property \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation $builder
  * @package Tekook\Filterable\Traits
  */
@@ -34,22 +35,31 @@ trait DatabaseFilterable
 
     protected function searchTerm($value)
     {
-        if ($this->allowSearch) {
-            $this->builder->where(function ($query) use ($value) {
-                /** @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation $query */
-                foreach ($this->filterableAttributes as $relation => $attr) {
-                    if (is_array($attr)) {
-                        foreach ($attr as $relation_attr) {
-                            $query->orWhereHas($relation, function ($q) use ($value, $relation_attr) {
+        if (!$this->allowSearch) {
+            return;
+        }
+        $this->builder->where(function ($query) use ($value) {
+            /** @var \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\Relation $query */
+            foreach ($this->filterableAttributes as $relation => $attr) {
+                if (is_array($attr)) {
+                    foreach ($attr as $relation_attr) {
+                        $query->orWhereHas($relation, function ($q) use ($value, $relation_attr) {
+                            if(in_array($relation_attr, $this->exactAttributes)) {
+                                $q->where($relation_attr, $value);
+                            } else {
                                 $q->where($relation_attr, 'like', '%' . $value . '%');
-                            });
-                        }
+                            }
+                        });
+                    }
+                } else {
+                    if(in_array($attr, $this->exactAttributes)) {
+                        $query->orWhere($attr, $value);
                     } else {
                         $query->orWhere($attr, 'like', '%' . $value . '%');
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     protected function filterGeneric($name, $value)
